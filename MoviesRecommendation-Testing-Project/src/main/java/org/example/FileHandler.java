@@ -15,6 +15,11 @@ public class FileHandler {
         List<Movie> movies = new ArrayList<>();
         Set<String> ids = new HashSet<>();
 
+        if (!filePath.toLowerCase().endsWith(".txt")) {
+            errorList.add("ERROR: Unsupported format");
+            return movies;
+        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String titleLine, genreLine;
 
@@ -64,6 +69,11 @@ public class FileHandler {
         List<User> users = new ArrayList<>();
         Set<String> userIds = new HashSet<>();
 
+        if (!filePath.toLowerCase().endsWith(".txt")) {
+            errorList.add("ERROR: Unsupported format");
+            return users;
+        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String infoLine, likesLine;
             while (true) {
@@ -77,7 +87,7 @@ public class FileHandler {
                 if (likesLine == null) break;
                 likesLine = likesLine.trim();
                 if (likesLine.isEmpty()) continue;
-                
+
                 String[] parts = infoLine.split(",", 2);
                 if (parts.length < 2) continue;
 
