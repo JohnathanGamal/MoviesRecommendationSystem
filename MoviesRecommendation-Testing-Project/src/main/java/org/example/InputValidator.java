@@ -24,7 +24,16 @@ public class InputValidator implements Validator{
 
     public boolean isMovieIdSuffixValid(String movieId, Set<String> existingIds) {
         if (!movieId.matches(".*\\d{3}$")) return false;
-        return !existingIds.contains(movieId);
+
+        String suffix = movieId.substring(movieId.length() - 3);
+        for (String id : existingIds) {
+            if (id.endsWith(suffix)) {
+                return false;
+            }
+        }
+
+        return true;
+
     }
 
 }
