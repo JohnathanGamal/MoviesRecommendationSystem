@@ -14,7 +14,7 @@ public class InputValidator implements Validator{
     }
 
     public boolean isValidUserId(String id, Set<String> existingUserIds) {
-        return id.matches("^\\d{8}[A-Za-z0-9]$") && id.length() == 9 && !existingUserIds.contains(id);
+        return id.matches("^((\\d{8}[A-Za-z0-9])|(\\d[A-Za-z0-9]{6}\\d[A-Za-z0-9]))$") && id.length() == 9 && !existingUserIds.contains(id);
     }
 
     public boolean isMovieIdLettersValid(String title, String movieId) {
