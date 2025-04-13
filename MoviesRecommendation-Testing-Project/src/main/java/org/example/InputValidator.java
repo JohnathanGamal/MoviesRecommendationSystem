@@ -4,8 +4,8 @@ import java.util.*;
 
 public class InputValidator implements Validator{
 
-    public boolean isValidMovieTitle(String title) {
-        return title.matches("([A-Z][a-zA-Z0-9]*|\\d+)(\\s([A-Z][a-zA-Z0-9]*|\\d+))*");
+   public boolean isValidMovieTitle(String title) {
+        return title.matches("([A-Z][a-z]|\\d+)(\\s([A-Z][a-z]|\\d+))*");
     }
 
 
