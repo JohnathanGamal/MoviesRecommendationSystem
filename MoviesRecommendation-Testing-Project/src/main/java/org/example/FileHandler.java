@@ -18,7 +18,18 @@ public class FileHandler {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String titleLine, genreLine;
 
-            while ((titleLine = reader.readLine()) != null && (genreLine = reader.readLine()) != null) {
+            while (true) {
+                titleLine = reader.readLine();
+                if (titleLine == null) break;
+                titleLine = titleLine.trim();
+                if (titleLine.isEmpty()) continue;
+
+                genreLine = reader.readLine();
+                if (genreLine == null) break;
+                genreLine = genreLine.trim();
+                if (genreLine.isEmpty()) continue;
+
+
                 String[] titleParts = titleLine.split(",", 2);
                 if (titleParts.length < 2) continue;
 
@@ -55,7 +66,18 @@ public class FileHandler {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String infoLine, likesLine;
-            while ((infoLine = reader.readLine()) != null && (likesLine = reader.readLine()) != null) {
+            while (true) {
+
+                infoLine = reader.readLine();
+                if (infoLine == null) break;
+                infoLine = infoLine.trim();
+                if (infoLine.isEmpty()) continue;
+
+                likesLine = reader.readLine();
+                if (likesLine == null) break;
+                likesLine = likesLine.trim();
+                if (likesLine.isEmpty()) continue;
+                
                 String[] parts = infoLine.split(",", 2);
                 if (parts.length < 2) continue;
 
