@@ -1,4 +1,4 @@
-package bLackBox;
+package Blackbox;
 
 import org.example.*;
 import org.junit.jupiter.api.BeforeEach;
