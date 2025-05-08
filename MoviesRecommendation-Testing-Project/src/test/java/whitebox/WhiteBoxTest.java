@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.FileHandler;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -159,5 +160,119 @@ public class WhiteBoxTest {
 
         // No errors should be reported
         assertTrue(errors.isEmpty(), "Error list should remain empty");
+    }
+
+    @Test
+    void testSkipEmptyGenreLine() throws IOException {
+        // Setup: validator accepts all titles/IDs
+        List<String> errors = new ArrayList<>();
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        validator.acceptAll = true;
+        fileHandler = new FileHandler(validator);
+
+        // File content: valid title line followed by an empty genre line
+        String content =
+                "Inception,M001\n" +
+                        "\n";
+        File file = createTempFile(content);
+
+        // Execute
+        List<Movie> result = fileHandler.readMovies(file.getAbsolutePath(), errors);
+
+        // Verify: no movies parsed, and no errors reported
+        assertTrue(result.isEmpty(), "Should skip record when genre line is empty");
+        assertTrue(errors.isEmpty(), "Error list should remain empty");
+    }
+
+    //conditional coverage testcases
+    @Test
+    void testWriteRecommendationsWithError() throws IOException {
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        fileHandler = new FileHandler(validator);
+        File file = File.createTempFile("recommendations", ".txt");
+        List<String> errorList = List.of("ERROR: Movie Id numbers M001 aren’t unique");
+
+        fileHandler.writeRecommendations(file.getAbsolutePath(), new HashMap<>(), errorList);
+
+        List<String> lines = java.nio.file.Files.readAllLines(file.toPath());
+        assertEquals(1, lines.size());
+        assertTrue(lines.getFirst().contains("ERROR: Movie Id numbers M001 aren’t unique"));
+    }
+    @Test
+    void testWriteRecommendationsSuccess() throws IOException {
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        fileHandler = new FileHandler(validator);
+        File file = File.createTempFile("recommendations", ".txt");
+        Map<User, List<String>> map = new HashMap<>();
+        map.put(new User("Poula", "12345678E", List.of("M001")), List.of("Inception"));
+
+        fileHandler.writeRecommendations(file.getAbsolutePath(), map, new ArrayList<>());
+
+        List<String> lines = java.nio.file.Files.readAllLines(file.toPath());
+        assertEquals("Poula,12345678E", lines.get(0));
+        assertEquals("Inception", lines.get(1));
+    }
+
+    //Basis path coverage testcases
+    @Test
+    void testInValidUserFile() throws IOException {
+        List<String> errors = new ArrayList<>();
+        Set<String> validMovieIds = new HashSet<>();
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        validator.acceptAll = true;
+        fileHandler = new FileHandler(validator);
+
+        List<User> result = fileHandler.readUsers("file.json",validMovieIds,errors);
+
+        assertEquals(1, errors.size());
+        assertTrue(result.isEmpty());
+    }
+    @Test
+    void testInvalidUserId() throws IOException {
+        List<String> errors = new ArrayList<>();
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        validator.acceptAll = false;
+        fileHandler = new FileHandler(validator);
+        File file = createTempFile("Issac,INVALID\nM001\n");
+        List<User> result = fileHandler.readUsers(file.getAbsolutePath(), Set.of("M001"), errors);
+
+        assertTrue(errors.get(0).contains("User Id INVALID is wrong"));
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    void testEmptyUserFile() throws IOException {
+        List<String> errors = new ArrayList<>();
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        fileHandler = new FileHandler(validator);
+        File file = createTempFile("");
+        List<User> result = fileHandler.readUsers(file.getAbsolutePath(), Set.of("M001"), errors);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testInvalidMovieIdinUser() throws IOException {
+        List<String> errors = new ArrayList<>();
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        validator.acceptAll = false;
+        fileHandler = new FileHandler(validator);
+        File file = createTempFile("Alice,12345678A\nUNKNOWN\n");
+        List<User> result = fileHandler.readUsers(file.getAbsolutePath(), Set.of("M001"), errors);
+
+        assertTrue(errors.get(0).contains("ERROR: User " + "Alice" + " has unknown movie ID " + "UNKNOWN"));
+    }
+    @Test
+    void testValidUserFile() throws IOException {
+        List<String> errors = new ArrayList<>();
+        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        validator.acceptAll = true;
+        fileHandler = new FileHandler(validator);
+        Set<String> validMovieIds = new HashSet<>(Arrays.asList("M001", "M002"));
+        File file = createTempFile("Alice,12345678A\nM001,M002\nBob,12345678A\nM001,M002\n");
+
+        List<User> result = fileHandler.readUsers(file.getAbsolutePath(), validMovieIds, errors);
+        assertEquals(2, result.size());
+        assertTrue(errors.isEmpty());
     }
 }
