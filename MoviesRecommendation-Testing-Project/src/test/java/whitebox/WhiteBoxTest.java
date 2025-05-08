@@ -61,7 +61,7 @@ public class WhiteBoxTest {
         FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
         fileHandler = new FileHandler(validator);
 
-        File file = createTempFile("invalid.pdf");
+         File file = File.createTempFile("invalid", ".pdf");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("Inception,M001\nAction,Drama\n");
         }
