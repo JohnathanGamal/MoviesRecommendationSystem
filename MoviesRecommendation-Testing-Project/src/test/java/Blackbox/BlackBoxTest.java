@@ -120,58 +120,75 @@ public class BlackBoxTest {
     }
 
     //////////////////////////// Decision Table on RecommendationSystem /////////////////////////////
+@Test
+void rule1_recommendationPossible() {
+    Movie m1 = new Movie("Action One", "M1", List.of("Action"));
+    Movie m2 = new Movie("Action Two", "M2", List.of("Action"));
+    User user = new User("User1", "U1", List.of("M1"));
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1, m2)).get(user);
+    assertEquals(List.of("Action Two"), recs);
+}
 
-    @Test
-    void tc1_noLikedMovies() {
-        User user = new User("Alice", "U1", List.of());
-        List<Movie> movies = List.of(new Movie("Movie A", "M1", List.of("Action")));
-        assertTrue(RecommendationSystem.generateRecommendations(List.of(user), movies).get(user).isEmpty());
-    }
+@Test
+void rule2_noMatchingGenres() {
+    Movie m1 = new Movie("Drama One", "M1", List.of("Drama"));
+    Movie m2 = new Movie("Comedy One", "M2", List.of("Comedy"));
+    User user = new User("User2", "U2", List.of("M1"));
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1, m2)).get(user);
+    assertTrue(recs.isEmpty());
+}
 
-    @Test
-    void tc2_likedMovieNotInDB() {
-        User user = new User("Bob", "U2", List.of("M2"));
-        List<Movie> movies = List.of(new Movie("Movie A", "M1", List.of("Action")));
-        assertTrue(RecommendationSystem.generateRecommendations(List.of(user), movies).get(user).isEmpty());
-    }
+@Test
+void rule3_likedMovieHasNoGenres() {
+    Movie m1 = new Movie("Unknown Genre", "M1", List.of());
+    Movie m2 = new Movie("Any Genre", "M2", List.of("Action"));
+    User user = new User("User3", "U3", List.of("M1"));
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1, m2)).get(user);
+    assertTrue(recs.isEmpty());
+}
 
-    @Test
-    void tc3_likedMovieHasNoGenres() {
-        Movie m1 = new Movie("Movie A", "M1", List.of());
-        User user = new User("Charlie", "U3", List.of("M1"));
-        List<Movie> movies = List.of(m1, new Movie("Other", "M2", List.of("Comedy")));
-        assertTrue(RecommendationSystem.generateRecommendations(List.of(user), movies).get(user).isEmpty());
-    }
+@Test
+void rule4_noGenresNoMatch() {
+    Movie m1 = new Movie("No Genre", "M1", List.of());
+    Movie m2 = new Movie("Other", "M2", List.of("Drama"));
+    User user = new User("User4", "U4", List.of("M1"));
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1, m2)).get(user);
+    assertTrue(recs.isEmpty());
+}
 
-    @Test
-    void tc4_noOtherMovieSharesGenre() {
-        Movie m1 = new Movie("Movie A", "M1", List.of("Action"));
-        Movie m2 = new Movie("Movie B", "M2", List.of("Drama"));
-        User user = new User("Dana", "U4", List.of("M1"));
-        List<Movie> movies = List.of(m1, m2);
-        assertTrue(RecommendationSystem.generateRecommendations(List.of(user), movies).get(user).isEmpty());
-    }
+@Test
+void rule5_noLikedMovies() {
+    Movie m1 = new Movie("Action One", "M1", List.of("Action"));
+    User user = new User("User5", "U5", List.of());
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1)).get(user);
+    assertTrue(recs.isEmpty());
+}
 
-    @Test
-    void tc5_allGenreMatchesAlreadyLiked() {
-        Movie m1 = new Movie("Movie A", "M1", List.of("Mystery"));
-        Movie m2 = new Movie("Movie B", "M2", List.of("Mystery"));
-        User user = new User("Eve", "U5", List.of("M1", "M2"));
-        List<Movie> movies = List.of(m1, m2);
-        assertTrue(RecommendationSystem.generateRecommendations(List.of(user), movies).get(user).isEmpty());
-    }
+@Test
+void rule6_noLikesAndNoGenres() {
+    Movie m1 = new Movie("No Genre", "M1", List.of());
+    User user = new User("User6", "U6", List.of());
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1)).get(user);
+    assertTrue(recs.isEmpty());
+}
 
-    @Test
-    void tc6_validRecommendationsExist() {
-        Movie m1 = new Movie("Adventure 1", "M1", List.of("Adventure"));
-        Movie m2 = new Movie("Adventure 2", "M2", List.of("Adventure"));
-        Movie m3 = new Movie("Comedy 1", "M3", List.of("Comedy"));
-        User user = new User("Frank", "U6", List.of("M1"));
-        List<Movie> movies = List.of(m1, m2, m3);
-        List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), movies).get(user);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains("Adventure 2"));
-    }
+@Test
+void rule7_noGenreMatchEvenIfLikedMovieHasGenres() {
+    Movie m1 = new Movie("Action One", "M1", List.of("Action"));
+    Movie m2 = new Movie("Drama One", "M2", List.of("Drama"));
+    User user = new User("User7", "U7", List.of("M1"));
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1, m2)).get(user);
+    assertTrue(recs.isEmpty());
+}
+
+@Test
+void rule8_noLikesAndNoMatch() {
+    Movie m1 = new Movie("Drama One", "M1", List.of("Drama"));
+    User user = new User("User8", "U8", List.of());
+    List<String> recs = RecommendationSystem.generateRecommendations(List.of(user), List.of(m1)).get(user);
+    assertTrue(recs.isEmpty());
+}
+
     ////////////////////////////Equivalence Class Partitioning Tests on FileHandler /////////////////////////////
 
     @Test
