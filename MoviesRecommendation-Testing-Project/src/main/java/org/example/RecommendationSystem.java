@@ -18,7 +18,11 @@ public class RecommendationSystem {
 
         for (User user : users) {
             Set<String> recommendedTitles = new LinkedHashSet<>();
-            for (String likedId : user.getLikedMovieIds()) {
+
+            List<String> likedIds = user.getLikedMovieIds();
+            if (likedIds == null) likedIds = List.of();
+
+            for (String likedId : likedIds) {
                 Movie likedMovie = idToMovie.get(likedId);
                 if (likedMovie == null) continue;
                 for (String genre : likedMovie.getGenres()) {

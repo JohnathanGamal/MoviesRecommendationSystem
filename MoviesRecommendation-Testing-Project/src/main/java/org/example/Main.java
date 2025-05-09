@@ -4,9 +4,11 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        String moviesFile = "movies.txt";
-        String usersFile = "users.txt";
-        String outputFile = "recommendations.txt";
+        // Accept input/output filenames from command-line if provided
+        String moviesFile = (args.length > 0) ? args[0] : "movies.txt";
+        String usersFile = (args.length > 1) ? args[1] : "users.txt";
+        String outputFile = (args.length > 2) ? args[2] : "recommendations.txt";
+
 
         List<String> errors = new ArrayList<>();
         List<Movie> movies = new ArrayList<>();
