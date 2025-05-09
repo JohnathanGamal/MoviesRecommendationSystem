@@ -1,17 +1,55 @@
-package org.example;
+package whitebox;
 
 import org.junit.jupiter.api.*;
+import org.example.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.FileHandler;
+import org.example.FileHandler;
+import org.example.User;
+import org.example.Validator;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class WhiteBoxTest {
     private List<Movie> movieList;
     private List<User> userList;
-    private FileHandler fileHandler;
+    static class TestValidator implements Validator {
+        boolean acceptAll = true;
+        Set<String> existingMovieIds = new HashSet<>();
+        Set<String> existingUserIds = new HashSet<>();
+
+        @Override
+        public boolean isValidMovieTitle(String title) {
+            return acceptAll || !title.toLowerCase().contains("invalid");
+        }
+
+        @Override
+        public boolean isMovieIdLettersValid(String title, String id) {
+            return acceptAll || !id.toLowerCase().contains("bad");
+        }
+
+        @Override
+        public boolean isMovieIdSuffixValid(String id, Set<String> ids) {
+            return acceptAll || !ids.contains(id);
+        }
+
+        @Override
+        public boolean isValidUserName(String name) {
+            return acceptAll || !name.contains("#");
+        }
+
+        @Override
+        public boolean isValidUserId(String id, Set<String> userIds) {
+            return acceptAll || (!id.equals("INVALID") && !userIds.contains(id));
+        }
+    }
+    private static FileHandler fileHandler;
+    @BeforeAll
+    public static void setUp() {
+        fileHandler = new FileHandler(new TestValidator());
+    }
 
     private File createTempFile(String content) throws IOException {
         File file = File.createTempFile("test", ".txt");
@@ -59,8 +97,8 @@ public class WhiteBoxTest {
     @Test
     void testUnsupportedFormat() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
-        fileHandler = new FileHandler(validator);
+        TestValidator validator = new TestValidator();
+        fileHandler = new org.example.FileHandler(validator);
 
          File file = File.createTempFile("invalid", ".pdf");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
@@ -74,7 +112,7 @@ public class WhiteBoxTest {
     @Test
     void testValidMovieFile() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = true;
         fileHandler = new FileHandler(validator);
         File file = createTempFile("Inception,M001\nAction,Drama\n");
@@ -86,7 +124,7 @@ public class WhiteBoxTest {
     @Test
     void testNullGenreLine() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         fileHandler = new FileHandler(validator);
         File file = createTempFile("Inception,M001\n");
         List<Movie> result = fileHandler.readMovies(file.getAbsolutePath(), errors);
@@ -97,7 +135,7 @@ public class WhiteBoxTest {
     @Test
     void testInvalidMovieTitle() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = false;
         fileHandler = new FileHandler(validator);
         File file = createTempFile("invalidTitle,M001\nAction,Drama\n");
@@ -109,7 +147,7 @@ public class WhiteBoxTest {
     @Test
     void testInvalidMovieIdLetters() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = false;
         fileHandler = new FileHandler(validator);
         File file = createTempFile("Inception,BAD123\nAction,Drama\n");
@@ -121,7 +159,7 @@ public class WhiteBoxTest {
     @Test
     void testInvalidMovieIdSuffix() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = false;
         fileHandler = new FileHandler(validator);
         File file = createTempFile("Inception,M001\nAction,Drama\nInception,M001\nAction,Drama\n");
@@ -135,7 +173,7 @@ public class WhiteBoxTest {
     void testSkipTitleAndMalformedLines() throws IOException {
         // Setup: validator accepts all titles/IDs
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = true;
         fileHandler = new FileHandler(validator);
 
@@ -166,7 +204,7 @@ public class WhiteBoxTest {
     void testSkipEmptyGenreLine() throws IOException {
         // Setup: validator accepts all titles/IDs
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = true;
         fileHandler = new FileHandler(validator);
 
@@ -187,7 +225,7 @@ public class WhiteBoxTest {
     //conditional coverage testcases
     @Test
     void testWriteRecommendationsWithError() throws IOException {
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         fileHandler = new FileHandler(validator);
         File file = File.createTempFile("recommendations", ".txt");
         List<String> errorList = List.of("ERROR: Movie Id numbers M001 aren’t unique");
@@ -200,7 +238,7 @@ public class WhiteBoxTest {
     }
     @Test
     void testWriteRecommendationsSuccess() throws IOException {
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         fileHandler = new FileHandler(validator);
         File file = File.createTempFile("recommendations", ".txt");
         Map<User, List<String>> map = new HashMap<>();
@@ -218,7 +256,7 @@ public class WhiteBoxTest {
     void testInValidUserFile() throws IOException {
         List<String> errors = new ArrayList<>();
         Set<String> validMovieIds = new HashSet<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = true;
         fileHandler = new FileHandler(validator);
 
@@ -230,7 +268,7 @@ public class WhiteBoxTest {
     @Test
     void testInvalidUserId() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = false;
         fileHandler = new FileHandler(validator);
         File file = createTempFile("Issac,INVALID\nM001\n");
@@ -243,7 +281,7 @@ public class WhiteBoxTest {
     @Test
     void testEmptyUserFile() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         fileHandler = new FileHandler(validator);
         File file = createTempFile("");
         List<User> result = fileHandler.readUsers(file.getAbsolutePath(), Set.of("M001"), errors);
@@ -254,7 +292,7 @@ public class WhiteBoxTest {
     @Test
     void testInvalidMovieIdinUser() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = false;
         fileHandler = new FileHandler(validator);
         File file = createTempFile("Alice,12345678A\nUNKNOWN\n");
@@ -265,7 +303,7 @@ public class WhiteBoxTest {
     @Test
     void testValidUserFile() throws IOException {
         List<String> errors = new ArrayList<>();
-        FileHandlerTest.TestValidator validator = new FileHandlerTest.TestValidator();
+        TestValidator validator = new TestValidator();
         validator.acceptAll = true;
         fileHandler = new FileHandler(validator);
         Set<String> validMovieIds = new HashSet<>(Arrays.asList("M001", "M002"));

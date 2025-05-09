@@ -1,4 +1,4 @@
-package org.whitebox;
+package whitebox;
 
 
 import org.example.FileHandler;
