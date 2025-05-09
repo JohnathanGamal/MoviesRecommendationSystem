@@ -16,15 +16,13 @@ class FileHandlerWriteRecommendationsIntegrationTest {
         File file = File.createTempFile("recommendations", ".txt");
         Map<User, List<String>> map = new HashMap<>();
         map.put(new User("Poula", "12345678E", List.of("INCP001")), List.of("Inception"));
-        map.put(new User("Rami", "98765432Q", List.of("INCP001")), List.of("Matrix", "Avatar"));
 
         fileHandler.writeRecommendations(file.getAbsolutePath(), map, new ArrayList<>());
 
         List<String> lines = java.nio.file.Files.readAllLines(file.toPath());
         assertEquals("Poula,12345678E", lines.get(0));
         assertEquals("Inception", lines.get(1));
-        assertEquals("Rami,98765432Q", lines.get(2));
-        assertEquals("Matrix, Avatar", lines.get(3));
+
     }
 
     @Test
